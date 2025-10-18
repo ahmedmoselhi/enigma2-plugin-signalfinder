@@ -1,0 +1,9 @@
+Package: enigma2-plugin-systemplugins-signalfinder
+Version:
+Description: Satellite scan(russian/viasat providers) with satfinder
+Section: base
+Priority: optional
+Architecture: all
+License: unknown
+OE: openPLi
+Maintainer: Dima73 <Dima-73@inbox.lv> /ahmedmoselhi <ahmedmoselhi55@gmail.com>
