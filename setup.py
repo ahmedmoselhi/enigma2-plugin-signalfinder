@@ -10,5 +10,4 @@ setup(name='enigma2-plugin-systemplugins-signalfinder',
 		packages=['SystemPlugins.Signalfinder'],
 		package_data={'SystemPlugins.Signalfinder': ['update-plugin.sh', 'image/*.png']},
 		description='Signal finder for DVB-S2 tuners',
-		cmdclass=setup_translate.cmdclass,
-	)
+		cmdclass=setup_translate.cmdclass)
