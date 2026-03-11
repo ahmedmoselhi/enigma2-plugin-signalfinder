@@ -64,6 +64,27 @@ NTVPLUS_DAL_VOSTOK = [(12226000, 0), (12245000, 1), (12303000, 0), (12322000, 1)
 KONTINENT_DAL_VOSTOK = [(10981000, 1), (11387000, 1),
                         (11530000, 0), (11557000, 0), (11665000, 1)]
 
+PROVIDER_DATA = {
+    "viasat": (49, VIASAT, (48, 49)),
+    "viasat_lat": (49, VIASATLATVIJA, (48, 49)),
+    "xtratv": (90, XTRATV, (90,)),
+    "viasat_ukr": (3560, VIASATUKR, (3560,)),
+    "ntv": (360, NTVPLUS, (360,)),
+    "tricolor": (360, TRIKOLOR, (360,)),
+    "ntv_vostok": (560, NTVPLUS_VOSTOK, (560,)),
+    "tricolor_sibir": (560, TRIKOLOR_SIBIR, (560,)),
+    "otautv": (585, OTAUTV, (585,)),
+    "raduga": (750, RADUGA, (750,)),
+    "mtstv": (750, MTSTV, (750,)),
+    "kontinent": (850, KONTINENT, (849, 850, 851)),
+    "ntv_dalvostok": (1400, NTVPLUS_DAL_VOSTOK, (1400,)),
+    "kontinent_dalvostok": (1400, KONTINENT_DAL_VOSTOK, (1400,)),
+}
+
+
+def getProviderData(provider):
+    return PROVIDER_DATA.get(provider)
+
 
 class TranspondersList(Screen):
     skin = """
@@ -539,57 +560,14 @@ class SignalFinderMultistreamT2MI(ConfigListScreen, Screen):
                 if self.provider_list.value != "none":
                     orbpos = 0
                     providerList = None
-                    viasat = False
-                    kontinent = False
-                    if self.provider_list.value == "viasat":
-                        orbpos = 49
-                        providerList = VIASAT
-                        viasat = True
-                    elif self.provider_list.value == "viasat_lat":
-                        orbpos = 49
-                        providerList = VIASATLATVIJA
-                        viasat = True
-                    elif self.provider_list.value == "xtratv":
-                        orbpos = 90
-                        providerList = XTRATV
-                    elif self.provider_list.value == "viasat_ukr":
-                        orbpos = 3560
-                        providerList = VIASATUKR
-                    elif self.provider_list.value == "ntv":
-                        orbpos = 360
-                        providerList = NTVPLUS
-                    elif self.provider_list.value == "tricolor":
-                        orbpos = 360
-                        providerList = TRIKOLOR
-                    elif self.provider_list.value == "ntv_vostok":
-                        orbpos = 560
-                        providerList = NTVPLUS_VOSTOK
-                    elif self.provider_list.value == "tricolor_sibir":
-                        orbpos = 560
-                        providerList = TRIKOLOR_SIBIR
-                    elif self.provider_list.value == "otautv":
-                        orbpos = 585
-                        providerList = OTAUTV
-                    elif self.provider_list.value == "raduga":
-                        orbpos = 750
-                        providerList = RADUGA
-                    elif self.provider_list.value == "mtstv":
-                        orbpos = 750
-                        providerList = MTSTV
-                    elif self.provider_list.value == "kontinent":
-                        kontinent = True
-                        orbpos = 850
-                        providerList = KONTINENT
-                    elif self.provider_list.value == "ntv_dalvostok":
-                        orbpos = 1400
-                        providerList = NTVPLUS_DAL_VOSTOK
-                    elif self.provider_list.value == "kontinent_dalvostok":
-                        orbpos = 1400
-                        providerList = KONTINENT_DAL_VOSTOK
+                    providerOrbitalPositions = ()
+                    providerData = getProviderData(self.provider_list.value)
+                    if providerData is not None:
+                        orbpos, providerList, providerOrbitalPositions = providerData
                     if orbpos > 0 and providerList is not None:
                         SatList = nimmanager.getSatListForNim(index_to_scan)
                         for sat in SatList:
-                            if sat[0] == orbpos or (viasat and sat[0] in (48, 49)) or (kontinent and sat[0] in (849, 850, 851)):
+                            if sat[0] in providerOrbitalPositions:
                                 tps = nimmanager.getTransponders(sat[0])
                                 for x in tps:
                                     pol = x[3]
@@ -838,10 +816,7 @@ class SignalFinderMultistreamT2MI(ConfigListScreen, Screen):
         self["config"].l.setList(self.list)
 
     def Satexists(self, tlist, pos):
-        for x in tlist:
-            if x == pos:
-                return 1
-        return 0
+        return int(pos in tlist)
 
     def newConfig(self):
         cur = self["config"].getCurrent()
@@ -1299,57 +1274,14 @@ class SignalFinderMultistreamT2MI(ConfigListScreen, Screen):
                     orbpos = 0
                     startScan = False
                     providerList = None
-                    viasat = False
-                    kontinent = False
-                    if self.provider_list.value == "viasat":
-                        orbpos = 49
-                        providerList = VIASAT
-                        viasat = True
-                    elif self.provider_list.value == "viasat_lat":
-                        orbpos = 49
-                        providerList = VIASATLATVIJA
-                        viasat = True
-                    elif self.provider_list.value == "xtratv":
-                        orbpos = 90
-                        providerList = XTRATV
-                    elif self.provider_list.value == "viasat_ukr":
-                        orbpos = 3560
-                        providerList = VIASATUKR
-                    elif self.provider_list.value == "ntv":
-                        orbpos = 360
-                        providerList = NTVPLUS
-                    elif self.provider_list.value == "tricolor":
-                        orbpos = 360
-                        providerList = TRIKOLOR
-                    elif self.provider_list.value == "ntv_vostok":
-                        orbpos = 560
-                        providerList = NTVPLUS_VOSTOK
-                    elif self.provider_list.value == "tricolor_sibir":
-                        orbpos = 560
-                        providerList = TRIKOLOR_SIBIR
-                    elif self.provider_list.value == "otautv":
-                        orbpos = 585
-                        providerList = OTAUTV
-                    elif self.provider_list.value == "raduga":
-                        orbpos = 750
-                        providerList = RADUGA
-                    elif self.provider_list.value == "mtstv":
-                        orbpos = 750
-                        providerList = MTSTV
-                    elif self.provider_list.value == "kontinent":
-                        orbpos = 850
-                        providerList = KONTINENT
-                        kontinent = True
-                    elif self.provider_list.value == "ntv_dalvostok":
-                        orbpos = 1400
-                        providerList = NTVPLUS_DAL_VOSTOK
-                    elif self.provider_list.value == "kontinent_dalvostok":
-                        orbpos = 1400
-                        providerList = KONTINENT_DAL_VOSTOK
+                    providerOrbitalPositions = ()
+                    providerData = getProviderData(self.provider_list.value)
+                    if providerData is not None:
+                        orbpos, providerList, providerOrbitalPositions = providerData
                     if orbpos > 0 and providerList is not None:
                         SatList = nimmanager.getSatListForNim(index_to_scan)
                         for sat in SatList:
-                            if sat[0] == orbpos or (viasat and sat[0] in (48, 49)) or (kontinent and sat[0] in (849, 850, 851)):
+                            if sat[0] in providerOrbitalPositions:
                                 self.getInitialTransponderProviderList(
                                     tlist, sat[0], providers=providerList)
                         removeAll = False
@@ -1853,57 +1785,14 @@ class SignalFinderMultistream(ConfigListScreen, Screen):
                 if self.provider_list.value != "none":
                     orbpos = 0
                     providerList = None
-                    viasat = False
-                    kontinent = False
-                    if self.provider_list.value == "viasat":
-                        orbpos = 49
-                        providerList = VIASAT
-                        viasat = True
-                    elif self.provider_list.value == "viasat_lat":
-                        orbpos = 49
-                        providerList = VIASATLATVIJA
-                        viasat = True
-                    elif self.provider_list.value == "xtratv":
-                        orbpos = 90
-                        providerList = XTRATV
-                    elif self.provider_list.value == "viasat_ukr":
-                        orbpos = 3560
-                        providerList = VIASATUKR
-                    elif self.provider_list.value == "ntv":
-                        orbpos = 360
-                        providerList = NTVPLUS
-                    elif self.provider_list.value == "tricolor":
-                        orbpos = 360
-                        providerList = TRIKOLOR
-                    elif self.provider_list.value == "ntv_vostok":
-                        orbpos = 560
-                        providerList = NTVPLUS_VOSTOK
-                    elif self.provider_list.value == "tricolor_sibir":
-                        orbpos = 560
-                        providerList = TRIKOLOR_SIBIR
-                    elif self.provider_list.value == "otautv":
-                        orbpos = 585
-                        providerList = OTAUTV
-                    elif self.provider_list.value == "raduga":
-                        orbpos = 750
-                        providerList = RADUGA
-                    elif self.provider_list.value == "mtstv":
-                        orbpos = 750
-                        providerList = MTSTV
-                    elif self.provider_list.value == "kontinent":
-                        kontinent = True
-                        orbpos = 850
-                        providerList = KONTINENT
-                    elif self.provider_list.value == "ntv_dalvostok":
-                        orbpos = 1400
-                        providerList = NTVPLUS_DAL_VOSTOK
-                    elif self.provider_list.value == "kontinent_dalvostok":
-                        orbpos = 1400
-                        providerList = KONTINENT_DAL_VOSTOK
+                    providerOrbitalPositions = ()
+                    providerData = getProviderData(self.provider_list.value)
+                    if providerData is not None:
+                        orbpos, providerList, providerOrbitalPositions = providerData
                     if orbpos > 0 and providerList is not None:
                         SatList = nimmanager.getSatListForNim(index_to_scan)
                         for sat in SatList:
-                            if sat[0] == orbpos or (viasat and sat[0] in (48, 49)) or (kontinent and sat[0] in (849, 850, 851)):
+                            if sat[0] in providerOrbitalPositions:
                                 tps = nimmanager.getTransponders(sat[0])
                                 for x in tps:
                                     pol = x[3]
@@ -2124,10 +2013,7 @@ class SignalFinderMultistream(ConfigListScreen, Screen):
         self["config"].l.setList(self.list)
 
     def Satexists(self, tlist, pos):
-        for x in tlist:
-            if x == pos:
-                return 1
-        return 0
+        return int(pos in tlist)
 
     def newConfig(self):
         cur = self["config"].getCurrent()
@@ -2531,57 +2417,14 @@ class SignalFinderMultistream(ConfigListScreen, Screen):
                     orbpos = 0
                     startScan = False
                     providerList = None
-                    viasat = False
-                    kontinent = False
-                    if self.provider_list.value == "viasat":
-                        orbpos = 49
-                        providerList = VIASAT
-                        viasat = True
-                    elif self.provider_list.value == "viasat_lat":
-                        orbpos = 49
-                        providerList = VIASATLATVIJA
-                        viasat = True
-                    elif self.provider_list.value == "xtratv":
-                        orbpos = 90
-                        providerList = XTRATV
-                    elif self.provider_list.value == "viasat_ukr":
-                        orbpos = 3560
-                        providerList = VIASATUKR
-                    elif self.provider_list.value == "ntv":
-                        orbpos = 360
-                        providerList = NTVPLUS
-                    elif self.provider_list.value == "tricolor":
-                        orbpos = 360
-                        providerList = TRIKOLOR
-                    elif self.provider_list.value == "ntv_vostok":
-                        orbpos = 560
-                        providerList = NTVPLUS_VOSTOK
-                    elif self.provider_list.value == "tricolor_sibir":
-                        orbpos = 560
-                        providerList = TRIKOLOR_SIBIR
-                    elif self.provider_list.value == "otautv":
-                        orbpos = 585
-                        providerList = OTAUTV
-                    elif self.provider_list.value == "raduga":
-                        orbpos = 750
-                        providerList = RADUGA
-                    elif self.provider_list.value == "mtstv":
-                        orbpos = 750
-                        providerList = MTSTV
-                    elif self.provider_list.value == "kontinent":
-                        orbpos = 850
-                        providerList = KONTINENT
-                        kontinent = True
-                    elif self.provider_list.value == "ntv_dalvostok":
-                        orbpos = 1400
-                        providerList = NTVPLUS_DAL_VOSTOK
-                    elif self.provider_list.value == "kontinent_dalvostok":
-                        orbpos = 1400
-                        providerList = KONTINENT_DAL_VOSTOK
+                    providerOrbitalPositions = ()
+                    providerData = getProviderData(self.provider_list.value)
+                    if providerData is not None:
+                        orbpos, providerList, providerOrbitalPositions = providerData
                     if orbpos > 0 and providerList is not None:
                         SatList = nimmanager.getSatListForNim(index_to_scan)
                         for sat in SatList:
-                            if sat[0] == orbpos or (viasat and sat[0] in (48, 49)) or (kontinent and sat[0] in (849, 850, 851)):
+                            if sat[0] in providerOrbitalPositions:
                                 self.getInitialTransponderProviderList(
                                     tlist, sat[0], providers=providerList)
                         removeAll = False
@@ -3127,57 +2970,14 @@ class SignalFinder(ConfigListScreen, Screen):
                 if self.provider_list.value != "none":
                     orbpos = 0
                     providerList = None
-                    viasat = False
-                    kontinent = False
-                    if self.provider_list.value == "viasat":
-                        orbpos = 49
-                        providerList = VIASAT
-                        viasat = True
-                    elif self.provider_list.value == "viasat_lat":
-                        orbpos = 49
-                        providerList = VIASATLATVIJA
-                        viasat = True
-                    elif self.provider_list.value == "xtratv":
-                        orbpos = 90
-                        providerList = XTRATV
-                    elif self.provider_list.value == "viasat_ukr":
-                        orbpos = 3560
-                        providerList = VIASATUKR
-                    elif self.provider_list.value == "ntv":
-                        orbpos = 360
-                        providerList = NTVPLUS
-                    elif self.provider_list.value == "tricolor":
-                        orbpos = 360
-                        providerList = TRIKOLOR
-                    elif self.provider_list.value == "ntv_vostok":
-                        orbpos = 560
-                        providerList = NTVPLUS_VOSTOK
-                    elif self.provider_list.value == "tricolor_sibir":
-                        orbpos = 560
-                        providerList = TRIKOLOR_SIBIR
-                    elif self.provider_list.value == "otautv":
-                        orbpos = 585
-                        providerList = OTAUTV
-                    elif self.provider_list.value == "raduga":
-                        orbpos = 750
-                        providerList = RADUGA
-                    elif self.provider_list.value == "mtstv":
-                        orbpos = 750
-                        providerList = MTSTV
-                    elif self.provider_list.value == "kontinent":
-                        kontinent = True
-                        orbpos = 850
-                        providerList = KONTINENT
-                    elif self.provider_list.value == "ntv_dalvostok":
-                        orbpos = 1400
-                        providerList = NTVPLUS_DAL_VOSTOK
-                    elif self.provider_list.value == "kontinent_dalvostok":
-                        orbpos = 1400
-                        providerList = KONTINENT_DAL_VOSTOK
+                    providerOrbitalPositions = ()
+                    providerData = getProviderData(self.provider_list.value)
+                    if providerData is not None:
+                        orbpos, providerList, providerOrbitalPositions = providerData
                     if orbpos > 0 and providerList is not None:
                         SatList = nimmanager.getSatListForNim(index_to_scan)
                         for sat in SatList:
-                            if sat[0] == orbpos or (viasat and sat[0] in (48, 49)) or (kontinent and sat[0] in (849, 850, 851)):
+                            if sat[0] in providerOrbitalPositions:
                                 tps = nimmanager.getTransponders(sat[0])
                                 for x in tps:
                                     pol = x[3]
@@ -3391,10 +3191,7 @@ class SignalFinder(ConfigListScreen, Screen):
         self["config"].l.setList(self.list)
 
     def Satexists(self, tlist, pos):
-        for x in tlist:
-            if x == pos:
-                return 1
-        return 0
+        return int(pos in tlist)
 
     def newConfig(self):
         cur = self["config"].getCurrent()
@@ -3769,57 +3566,14 @@ class SignalFinder(ConfigListScreen, Screen):
                     orbpos = 0
                     startScan = False
                     providerList = None
-                    viasat = False
-                    kontinent = False
-                    if self.provider_list.value == "viasat":
-                        orbpos = 49
-                        providerList = VIASAT
-                        viasat = True
-                    elif self.provider_list.value == "viasat_lat":
-                        orbpos = 49
-                        providerList = VIASATLATVIJA
-                        viasat = True
-                    elif self.provider_list.value == "xtratv":
-                        orbpos = 90
-                        providerList = XTRATV
-                    elif self.provider_list.value == "viasat_ukr":
-                        orbpos = 3560
-                        providerList = VIASATUKR
-                    elif self.provider_list.value == "ntv":
-                        orbpos = 360
-                        providerList = NTVPLUS
-                    elif self.provider_list.value == "tricolor":
-                        orbpos = 360
-                        providerList = TRIKOLOR
-                    elif self.provider_list.value == "ntv_vostok":
-                        orbpos = 560
-                        providerList = NTVPLUS_VOSTOK
-                    elif self.provider_list.value == "tricolor_sibir":
-                        orbpos = 560
-                        providerList = TRIKOLOR_SIBIR
-                    elif self.provider_list.value == "otautv":
-                        orbpos = 585
-                        providerList = OTAUTV
-                    elif self.provider_list.value == "raduga":
-                        orbpos = 750
-                        providerList = RADUGA
-                    elif self.provider_list.value == "mtstv":
-                        orbpos = 750
-                        providerList = MTSTV
-                    elif self.provider_list.value == "kontinent":
-                        orbpos = 850
-                        providerList = KONTINENT
-                        kontinent = True
-                    elif self.provider_list.value == "ntv_dalvostok":
-                        orbpos = 1400
-                        providerList = NTVPLUS_DAL_VOSTOK
-                    elif self.provider_list.value == "kontinent_dalvostok":
-                        orbpos = 1400
-                        providerList = KONTINENT_DAL_VOSTOK
+                    providerOrbitalPositions = ()
+                    providerData = getProviderData(self.provider_list.value)
+                    if providerData is not None:
+                        orbpos, providerList, providerOrbitalPositions = providerData
                     if orbpos > 0 and providerList is not None:
                         SatList = nimmanager.getSatListForNim(index_to_scan)
                         for sat in SatList:
-                            if sat[0] == orbpos or (viasat and sat[0] in (48, 49)) or (kontinent and sat[0] in (849, 850, 851)):
+                            if sat[0] in providerOrbitalPositions:
                                 self.getInitialTransponderProviderList(
                                     tlist, sat[0], providers=providerList)
                         removeAll = False
