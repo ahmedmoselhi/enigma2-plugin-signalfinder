@@ -491,8 +491,12 @@ class SignalFinderMultistreamT2MI(ConfigListScreen, Screen):
         if not self.frontend or not self.scan_type.value.endswith("_transponder"):
             return
         if len(self.tpslist) and self.tpslist_idx < len(self.tpslist):
+            status = {}
+            self.frontend.getFrontendStatus(status)
+            if status.get("tuner_state") == "LOCKED":
+                return
             self.tune(self.tpslist[self.tpslist_idx])
-            self.forceTuneTimer.start(5000, True)
+            self.forceTuneTimer.start(1000, True)
 
     def retune(self, configElement=None):
         if configElement is None:
@@ -619,7 +623,7 @@ class SignalFinderMultistreamT2MI(ConfigListScreen, Screen):
             if multi_tune:
                 self.tuneTimer.start(200, True)
             elif self.scan_type.value.endswith("_transponder"):
-                self.forceTuneTimer.start(5000, True)
+                self.forceTuneTimer.start(1000, True)
         self["status"].setText(status_text)
 
     def OrbToStr(self, orbpos=-1):
@@ -1705,8 +1709,12 @@ class SignalFinderMultistream(ConfigListScreen, Screen):
         if not self.frontend or not self.scan_type.value.endswith("_transponder"):
             return
         if len(self.tpslist) and self.tpslist_idx < len(self.tpslist):
+            status = {}
+            self.frontend.getFrontendStatus(status)
+            if status.get("tuner_state") == "LOCKED":
+                return
             self.tune(self.tpslist[self.tpslist_idx])
-            self.forceTuneTimer.start(5000, True)
+            self.forceTuneTimer.start(1000, True)
 
     def retune(self, configElement=None):
         if configElement is None:
@@ -1831,7 +1839,7 @@ class SignalFinderMultistream(ConfigListScreen, Screen):
             if multi_tune:
                 self.tuneTimer.start(200, True)
             elif self.scan_type.value.endswith("_transponder"):
-                self.forceTuneTimer.start(5000, True)
+                self.forceTuneTimer.start(1000, True)
         self["status"].setText(status_text)
 
     def OrbToStr(self, orbpos=-1):
@@ -2880,8 +2888,12 @@ class SignalFinder(ConfigListScreen, Screen):
         if not self.frontend or not self.scan_type.value.endswith("_transponder"):
             return
         if len(self.tpslist) and self.tpslist_idx < len(self.tpslist):
+            status = {}
+            self.frontend.getFrontendStatus(status)
+            if status.get("tuner_state") == "LOCKED":
+                return
             self.tune(self.tpslist[self.tpslist_idx])
-            self.forceTuneTimer.start(5000, True)
+            self.forceTuneTimer.start(1000, True)
 
     def retune(self, configElement=None):
         if configElement is None:
@@ -3003,7 +3015,7 @@ class SignalFinder(ConfigListScreen, Screen):
             if multi_tune:
                 self.tuneTimer.start(200, True)
             elif self.scan_type.value.endswith("_transponder"):
-                self.forceTuneTimer.start(5000, True)
+                self.forceTuneTimer.start(1000, True)
         self["status"].setText(status_text)
 
     def OrbToStr(self, orbpos=-1):
