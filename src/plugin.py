@@ -209,7 +209,7 @@ class SignalFinderMultistreamT2MI(ConfigListScreen, Screen):
 		self.tuneTimer = eTimer()
 		self.tuneTimer.callback.append(self.updateTuneStatus)
 		self.relock_fail_count = 0
-		self.relock_restart_threshold = 3
+		self.relock_restart_threshold = 1
 		self.relock_restart_pending = False
 		need_sat = False
 		if self.service is not None:
@@ -366,6 +366,12 @@ class SignalFinderMultistreamT2MI(ConfigListScreen, Screen):
 		self.relock_restart_pending = True
 		self.relock_fail_count = 0
 		self.tuneTimer.stop()
+		self["status"].setText(_("restarting tuner..."))
+		try:
+			self.session.nav.stopService()
+		except:
+			pass
+		self.stop_service = True
 		self.deInitFrontend()
 		self.initFrontend()
 		self.relock_restart_pending = False
@@ -420,7 +426,11 @@ class SignalFinderMultistreamT2MI(ConfigListScreen, Screen):
 					stop = True
 				else:
 					self.relock_fail_count = 0
-					self.tuneTimer.start(1000, True)
+					self.tuneTimer.start(500, True)
+					return
+			else:
+				if len(self.tpslist) == 1:
+					self.restartFrontendForRelock()
 					return
 			if not stop:
 				self["status"].setText(self.OrbToStr(self.tpslist[self.tpslist_idx][5]) + ": " + str(self.tpslist[self.tpslist_idx][0]) + " " + self.PolToStr(self.tpslist[self.tpslist_idx][2]))
@@ -1445,7 +1455,7 @@ class SignalFinderMultistream(ConfigListScreen, Screen):
 		self.tuneTimer = eTimer()
 		self.tuneTimer.callback.append(self.updateTuneStatus)
 		self.relock_fail_count = 0
-		self.relock_restart_threshold = 3
+		self.relock_restart_threshold = 1
 		self.relock_restart_pending = False
 		need_sat = False
 		if self.service is not None:
@@ -1602,6 +1612,12 @@ class SignalFinderMultistream(ConfigListScreen, Screen):
 		self.relock_restart_pending = True
 		self.relock_fail_count = 0
 		self.tuneTimer.stop()
+		self["status"].setText(_("restarting tuner..."))
+		try:
+			self.session.nav.stopService()
+		except:
+			pass
+		self.stop_service = True
 		self.deInitFrontend()
 		self.initFrontend()
 		self.relock_restart_pending = False
@@ -1656,7 +1672,11 @@ class SignalFinderMultistream(ConfigListScreen, Screen):
 					stop = True
 				else:
 					self.relock_fail_count = 0
-					self.tuneTimer.start(1000, True)
+					self.tuneTimer.start(500, True)
+					return
+			else:
+				if len(self.tpslist) == 1:
+					self.restartFrontendForRelock()
 					return
 			if not stop:
 				self["status"].setText(self.OrbToStr(self.tpslist[self.tpslist_idx][5]) + ": " + str(self.tpslist[self.tpslist_idx][0]) + " " + self.PolToStr(self.tpslist[self.tpslist_idx][2]))
@@ -2662,7 +2682,7 @@ class SignalFinder(ConfigListScreen, Screen):
 		self.tuneTimer = eTimer()
 		self.tuneTimer.callback.append(self.updateTuneStatus)
 		self.relock_fail_count = 0
-		self.relock_restart_threshold = 3
+		self.relock_restart_threshold = 1
 		self.relock_restart_pending = False
 		need_sat = False
 		if self.service is not None:
@@ -2811,6 +2831,12 @@ class SignalFinder(ConfigListScreen, Screen):
 		self.relock_restart_pending = True
 		self.relock_fail_count = 0
 		self.tuneTimer.stop()
+		self["status"].setText(_("restarting tuner..."))
+		try:
+			self.session.nav.stopService()
+		except:
+			pass
+		self.stop_service = True
 		self.deInitFrontend()
 		self.initFrontend()
 		self.relock_restart_pending = False
@@ -2865,7 +2891,11 @@ class SignalFinder(ConfigListScreen, Screen):
 					stop = True
 				else:
 					self.relock_fail_count = 0
-					self.tuneTimer.start(1000, True)
+					self.tuneTimer.start(500, True)
+					return
+			else:
+				if len(self.tpslist) == 1:
+					self.restartFrontendForRelock()
 					return
 			if not stop:
 				self["status"].setText(self.OrbToStr(self.tpslist[self.tpslist_idx][5]) + ": " + str(self.tpslist[self.tpslist_idx][0]) + " " + self.PolToStr(self.tpslist[self.tpslist_idx][2]))
