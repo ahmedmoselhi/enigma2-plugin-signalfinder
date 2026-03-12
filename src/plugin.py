@@ -468,7 +468,7 @@ class SignalFinderMultistreamT2MI(ConfigListScreen, Screen):
             if should_retune:
                 self.tune(self.tpslist[self.tpslist_idx])
             self.forceRetuneOnNextTick = False
-            self.forceTuneTimer.start(1000, True)
+            self.forceTuneTimer.start(100, True)
 
     def retune(self, configElement=None):
         if configElement is None:
@@ -640,7 +640,7 @@ class SignalFinderMultistreamT2MI(ConfigListScreen, Screen):
                 self.tuneTimer.start(200, True)
             elif self.scan_type.value.endswith("_transponder"):
                 self.forceRetuneOnNextTick = True
-                self.forceTuneTimer.start(1000, True)
+                self.forceTuneTimer.start(100, True)
         self["status"].setText(status_text)
 
     def OrbToStr(self, orbpos=-1):
@@ -1821,7 +1821,7 @@ class SignalFinderMultistream(ConfigListScreen, Screen):
             if should_retune:
                 self.tune(self.tpslist[self.tpslist_idx])
             self.forceRetuneOnNextTick = False
-            self.forceTuneTimer.start(1000, True)
+            self.forceTuneTimer.start(100, True)
 
     def retune(self, configElement=None):
         if configElement is None:
@@ -1991,7 +1991,7 @@ class SignalFinderMultistream(ConfigListScreen, Screen):
                 self.tuneTimer.start(200, True)
             elif self.scan_type.value.endswith("_transponder"):
                 self.forceRetuneOnNextTick = True
-                self.forceTuneTimer.start(1000, True)
+                self.forceTuneTimer.start(100, True)
         self["status"].setText(status_text)
 
     def OrbToStr(self, orbpos=-1):
@@ -3135,7 +3135,7 @@ class SignalFinder(ConfigListScreen, Screen):
             if should_retune:
                 self.tune(self.tpslist[self.tpslist_idx])
             self.forceRetuneOnNextTick = False
-            self.forceTuneTimer.start(1000, True)
+            self.forceTuneTimer.start(100, True)
 
     def retune(self, configElement=None):
         if configElement is None:
@@ -3302,7 +3302,7 @@ class SignalFinder(ConfigListScreen, Screen):
                 self.tuneTimer.start(200, True)
             elif self.scan_type.value.endswith("_transponder"):
                 self.forceRetuneOnNextTick = True
-                self.forceTuneTimer.start(1000, True)
+                self.forceTuneTimer.start(100, True)
         self["status"].setText(status_text)
 
     def OrbToStr(self, orbpos=-1):
