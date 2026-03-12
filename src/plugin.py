@@ -381,22 +381,28 @@ class SignalFinderMultistreamT2MI(ConfigListScreen, Screen):
 				self["introduction"].setText(_("Nothing to scan!\nPlease setup your tuner settings before you start a service scan."))
 
 	def updateTuneStatus(self):
-		if not self.frontend:
+		if not self.frontend or not len(self.tpslist):
 			return
 		stop = False
 		dict = {}
 		self.frontend.getFrontendStatus(dict)
-		if dict["tuner_state"] == "TUNING":
+		state = dict.get("tuner_state")
+		if state == "TUNING":
 			self.tuneTimer.start(200, True)
 		else:
-			if dict["tuner_state"] == "LOSTLOCK" or dict["tuner_state"] == "FAILED":
-				self.tpslist_idx += 1
-				if self.tpslist_idx >= len(self.tpslist):
+			if state == "LOSTLOCK" or state == "FAILED":
+				if len(self.tpslist) > 1:
+					self.tpslist_idx += 1
+					if self.tpslist_idx >= len(self.tpslist):
+						stop = True
+						self["status"].setText(_("search failed!"))
+						self.tpslist_idx = 0
+			elif state == "LOCKED":
+				if len(self.tpslist) > 1:
 					stop = True
-					self["status"].setText(_("search failed!"))
-					self.tpslist_idx = 0
-			elif dict["tuner_state"] == "LOCKED":
-				stop = True
+				else:
+					self.tuneTimer.start(1000, True)
+					return
 			if not stop:
 				self["status"].setText(self.OrbToStr(self.tpslist[self.tpslist_idx][5]) + ": " + str(self.tpslist[self.tpslist_idx][0]) + " " + self.PolToStr(self.tpslist[self.tpslist_idx][2]))
 				self.tune(self.tpslist[self.tpslist_idx])
@@ -568,8 +574,7 @@ class SignalFinderMultistreamT2MI(ConfigListScreen, Screen):
 		if len(self.tpslist):
 			status_text = self.OrbToStr(self.tpslist[self.tpslist_idx][5]) + ": " + str(self.tpslist[self.tpslist_idx][0]) + " " + self.PolToStr(self.tpslist[self.tpslist_idx][2])
 			self.tune(self.tpslist[self.tpslist_idx])
-			if multi_tune:
-				self.tuneTimer.start(200, True)
+			self.tuneTimer.start(200, True)
 		self["status"].setText(status_text)
 
 	def OrbToStr(self, orbpos=-1):
@@ -1592,22 +1597,28 @@ class SignalFinderMultistream(ConfigListScreen, Screen):
 				self["introduction"].setText(_("Nothing to scan!\nPlease setup your tuner settings before you start a service scan."))
 
 	def updateTuneStatus(self):
-		if not self.frontend:
+		if not self.frontend or not len(self.tpslist):
 			return
 		stop = False
 		dict = {}
 		self.frontend.getFrontendStatus(dict)
-		if dict["tuner_state"] == "TUNING":
+		state = dict.get("tuner_state")
+		if state == "TUNING":
 			self.tuneTimer.start(200, True)
 		else:
-			if dict["tuner_state"] == "LOSTLOCK" or dict["tuner_state"] == "FAILED":
-				self.tpslist_idx += 1
-				if self.tpslist_idx >= len(self.tpslist):
+			if state == "LOSTLOCK" or state == "FAILED":
+				if len(self.tpslist) > 1:
+					self.tpslist_idx += 1
+					if self.tpslist_idx >= len(self.tpslist):
+						stop = True
+						self["status"].setText(_("search failed!"))
+						self.tpslist_idx = 0
+			elif state == "LOCKED":
+				if len(self.tpslist) > 1:
 					stop = True
-					self["status"].setText(_("search failed!"))
-					self.tpslist_idx = 0
-			elif dict["tuner_state"] == "LOCKED":
-				stop = True
+				else:
+					self.tuneTimer.start(1000, True)
+					return
 			if not stop:
 				self["status"].setText(self.OrbToStr(self.tpslist[self.tpslist_idx][5]) + ": " + str(self.tpslist[self.tpslist_idx][0]) + " " + self.PolToStr(self.tpslist[self.tpslist_idx][2]))
 				self.tune(self.tpslist[self.tpslist_idx])
@@ -1777,8 +1788,7 @@ class SignalFinderMultistream(ConfigListScreen, Screen):
 		if len(self.tpslist):
 			status_text = self.OrbToStr(self.tpslist[self.tpslist_idx][5]) + ": " + str(self.tpslist[self.tpslist_idx][0]) + " " + self.PolToStr(self.tpslist[self.tpslist_idx][2])
 			self.tune(self.tpslist[self.tpslist_idx])
-			if multi_tune:
-				self.tuneTimer.start(200, True)
+			self.tuneTimer.start(200, True)
 		self["status"].setText(status_text)
 
 	def OrbToStr(self, orbpos=-1):
@@ -2776,22 +2786,28 @@ class SignalFinder(ConfigListScreen, Screen):
 				self["introduction"].setText(_("Nothing to scan!\nPlease setup your tuner settings before you start a service scan."))
 
 	def updateTuneStatus(self):
-		if not self.frontend:
+		if not self.frontend or not len(self.tpslist):
 			return
 		stop = False
 		dict = {}
 		self.frontend.getFrontendStatus(dict)
-		if dict["tuner_state"] == "TUNING":
+		state = dict.get("tuner_state")
+		if state == "TUNING":
 			self.tuneTimer.start(200, True)
 		else:
-			if dict["tuner_state"] == "LOSTLOCK" or dict["tuner_state"] == "FAILED":
-				self.tpslist_idx += 1
-				if self.tpslist_idx >= len(self.tpslist):
+			if state == "LOSTLOCK" or state == "FAILED":
+				if len(self.tpslist) > 1:
+					self.tpslist_idx += 1
+					if self.tpslist_idx >= len(self.tpslist):
+						stop = True
+						self["status"].setText(_("search failed!"))
+						self.tpslist_idx = 0
+			elif state == "LOCKED":
+				if len(self.tpslist) > 1:
 					stop = True
-					self["status"].setText(_("search failed!"))
-					self.tpslist_idx = 0
-			elif dict["tuner_state"] == "LOCKED":
-				stop = True
+				else:
+					self.tuneTimer.start(1000, True)
+					return
 			if not stop:
 				self["status"].setText(self.OrbToStr(self.tpslist[self.tpslist_idx][5]) + ": " + str(self.tpslist[self.tpslist_idx][0]) + " " + self.PolToStr(self.tpslist[self.tpslist_idx][2]))
 				self.tune(self.tpslist[self.tpslist_idx])
@@ -2958,8 +2974,7 @@ class SignalFinder(ConfigListScreen, Screen):
 		if len(self.tpslist):
 			status_text = self.OrbToStr(self.tpslist[self.tpslist_idx][5]) + ": " + str(self.tpslist[self.tpslist_idx][0]) + " " + self.PolToStr(self.tpslist[self.tpslist_idx][2])
 			self.tune(self.tpslist[self.tpslist_idx])
-			if multi_tune:
-				self.tuneTimer.start(200, True)
+			self.tuneTimer.start(200, True)
 		self["status"].setText(status_text)
 
 	def OrbToStr(self, orbpos=-1):

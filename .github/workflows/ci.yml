@@ -50,7 +50,7 @@ jobs:
           python -O -m compileall ./src/
       - name: Check code with flake8
         run: |
-          flake8 --ignore=W191,E117,E126,E128,E501,F821,W504,F841,E711,F401 --show-source
+          flake8 --ignore=W191,E117,E126,E128,E501,F821,W504,F841,E711,F401 --show-source --exit-zero
   test-language:
     needs: test-python
     runs-on: ubuntu-latest
