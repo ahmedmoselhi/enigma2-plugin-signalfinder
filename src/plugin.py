@@ -465,11 +465,20 @@ class SignalFinderMultistreamT2MI(ConfigListScreen, Screen):
                 should_retune = True
             if should_retune:
                 transponder = self.tpslist[self.tpslist_idx]
-                # Some drivers ignore retune when params are identical; nudge frequency then tune back.
-                nudge = -1 if getattr(self, "retuneNudgeDown", False) else 1
-                self.retuneNudgeDown = not getattr(self, "retuneNudgeDown", False)
+                # Some drivers ignore identical retunes; perform a stronger kick then tune back.
                 nudged = list(transponder)
-                nudged[0] = max(1, transponder[0] + nudge)
+                kick_phase = getattr(self, "retuneKickPhase", 0)
+                if kick_phase == 0:
+                    nudged[0] = max(1, transponder[0] + 100)
+                elif kick_phase == 1:
+                    nudged[0] = max(1, transponder[0] - 100)
+                else:
+                    pol = transponder[2]
+                    if pol in (0, 1):
+                        nudged[2] = 1 - pol
+                    elif pol in (2, 3):
+                        nudged[2] = 5 - pol
+                self.retuneKickPhase = (kick_phase + 1) % 3
                 self.tune(tuple(nudged))
                 self.tune(transponder)
             self.forceRetuneOnNextTick = False
@@ -481,6 +490,7 @@ class SignalFinderMultistreamT2MI(ConfigListScreen, Screen):
         self.tuneTimer.stop()
         self.forceTuneTimer.stop()
         self.forceRetuneTicks = 0
+        self.retuneKickPhase = 0
         if self.scan_nims == []:
             return
         if self.scan_nims.value == "":
@@ -703,6 +713,7 @@ class SignalFinderMultistreamT2MI(ConfigListScreen, Screen):
         self.tuneTimer.stop()
         self.forceTuneTimer.stop()
         self.forceRetuneTicks = 0
+        self.retuneKickPhase = 0
         self.list = []
         self.multiscanlist = []
         if self.scan_nims == [] or self.scan_nims.value == "":
@@ -1274,6 +1285,7 @@ class SignalFinderMultistreamT2MI(ConfigListScreen, Screen):
         self.tuneTimer.stop()
         self.forceTuneTimer.stop()
         self.forceRetuneTicks = 0
+        self.retuneKickPhase = 0
         self.deInitFrontend()
         index_to_scan = int(self.scan_nims.value)
         self.feid = index_to_scan
@@ -1427,6 +1439,7 @@ class SignalFinderMultistreamT2MI(ConfigListScreen, Screen):
         self.tuneTimer.stop()
         self.forceTuneTimer.stop()
         self.forceRetuneTicks = 0
+        self.retuneKickPhase = 0
         self.deInitFrontend()
         if answer:
             self.session.nav.playService(self.session.postScanService)
@@ -1823,11 +1836,20 @@ class SignalFinderMultistream(ConfigListScreen, Screen):
                 should_retune = True
             if should_retune:
                 transponder = self.tpslist[self.tpslist_idx]
-                # Some drivers ignore retune when params are identical; nudge frequency then tune back.
-                nudge = -1 if getattr(self, "retuneNudgeDown", False) else 1
-                self.retuneNudgeDown = not getattr(self, "retuneNudgeDown", False)
+                # Some drivers ignore identical retunes; perform a stronger kick then tune back.
                 nudged = list(transponder)
-                nudged[0] = max(1, transponder[0] + nudge)
+                kick_phase = getattr(self, "retuneKickPhase", 0)
+                if kick_phase == 0:
+                    nudged[0] = max(1, transponder[0] + 100)
+                elif kick_phase == 1:
+                    nudged[0] = max(1, transponder[0] - 100)
+                else:
+                    pol = transponder[2]
+                    if pol in (0, 1):
+                        nudged[2] = 1 - pol
+                    elif pol in (2, 3):
+                        nudged[2] = 5 - pol
+                self.retuneKickPhase = (kick_phase + 1) % 3
                 self.tune(tuple(nudged))
                 self.tune(transponder)
             self.forceRetuneOnNextTick = False
@@ -1839,6 +1861,7 @@ class SignalFinderMultistream(ConfigListScreen, Screen):
         self.tuneTimer.stop()
         self.forceTuneTimer.stop()
         self.forceRetuneTicks = 0
+        self.retuneKickPhase = 0
         if self.scan_nims == []:
             return
         if self.scan_nims.value == "":
@@ -2053,6 +2076,7 @@ class SignalFinderMultistream(ConfigListScreen, Screen):
         self.tuneTimer.stop()
         self.forceTuneTimer.stop()
         self.forceRetuneTicks = 0
+        self.retuneKickPhase = 0
         self.list = []
         self.multiscanlist = []
         if self.scan_nims == [] or self.scan_nims.value == "":
@@ -2550,6 +2574,7 @@ class SignalFinderMultistream(ConfigListScreen, Screen):
         self.tuneTimer.stop()
         self.forceTuneTimer.stop()
         self.forceRetuneTicks = 0
+        self.retuneKickPhase = 0
         self.deInitFrontend()
         index_to_scan = int(self.scan_nims.value)
         self.feid = index_to_scan
@@ -2701,6 +2726,7 @@ class SignalFinderMultistream(ConfigListScreen, Screen):
         self.tuneTimer.stop()
         self.forceTuneTimer.stop()
         self.forceRetuneTicks = 0
+        self.retuneKickPhase = 0
         self.deInitFrontend()
         if answer:
             self.session.nav.playService(self.session.postScanService)
@@ -3142,11 +3168,20 @@ class SignalFinder(ConfigListScreen, Screen):
                 should_retune = True
             if should_retune:
                 transponder = self.tpslist[self.tpslist_idx]
-                # Some drivers ignore retune when params are identical; nudge frequency then tune back.
-                nudge = -1 if getattr(self, "retuneNudgeDown", False) else 1
-                self.retuneNudgeDown = not getattr(self, "retuneNudgeDown", False)
+                # Some drivers ignore identical retunes; perform a stronger kick then tune back.
                 nudged = list(transponder)
-                nudged[0] = max(1, transponder[0] + nudge)
+                kick_phase = getattr(self, "retuneKickPhase", 0)
+                if kick_phase == 0:
+                    nudged[0] = max(1, transponder[0] + 100)
+                elif kick_phase == 1:
+                    nudged[0] = max(1, transponder[0] - 100)
+                else:
+                    pol = transponder[2]
+                    if pol in (0, 1):
+                        nudged[2] = 1 - pol
+                    elif pol in (2, 3):
+                        nudged[2] = 5 - pol
+                self.retuneKickPhase = (kick_phase + 1) % 3
                 self.tune(tuple(nudged))
                 self.tune(transponder)
             self.forceRetuneOnNextTick = False
@@ -3158,6 +3193,7 @@ class SignalFinder(ConfigListScreen, Screen):
         self.tuneTimer.stop()
         self.forceTuneTimer.stop()
         self.forceRetuneTicks = 0
+        self.retuneKickPhase = 0
         if self.scan_nims == []:
             return
         if self.scan_nims.value == "":
@@ -3369,6 +3405,7 @@ class SignalFinder(ConfigListScreen, Screen):
         self.tuneTimer.stop()
         self.forceTuneTimer.stop()
         self.forceRetuneTicks = 0
+        self.retuneKickPhase = 0
         self.list = []
         self.multiscanlist = []
         if self.scan_nims == [] or self.scan_nims.value == "":
@@ -3833,6 +3870,7 @@ class SignalFinder(ConfigListScreen, Screen):
         self.tuneTimer.stop()
         self.forceTuneTimer.stop()
         self.forceRetuneTicks = 0
+        self.retuneKickPhase = 0
         self.deInitFrontend()
         index_to_scan = int(self.scan_nims.value)
         self.feid = index_to_scan
@@ -3981,6 +4019,7 @@ class SignalFinder(ConfigListScreen, Screen):
         self.tuneTimer.stop()
         self.forceTuneTimer.stop()
         self.forceRetuneTicks = 0
+        self.retuneKickPhase = 0
         self.deInitFrontend()
         if answer:
             self.session.nav.playService(self.session.postScanService)
