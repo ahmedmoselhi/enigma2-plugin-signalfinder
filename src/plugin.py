@@ -454,16 +454,28 @@ class SignalFinderMultistreamT2MI(ConfigListScreen, Screen):
             status = {}
             self.frontend.getFrontendStatus(status)
             force_retune_once = getattr(self, "forceRetuneOnNextTick", False)
-            if force_retune_once or status.get("tuner_state") != "LOCKED":
+            tuner_state = status.get("tuner_state")
+            lock_ticks = getattr(self, "lockedTicks", 0)
+            should_retune = force_retune_once or tuner_state != "LOCKED"
+            if tuner_state == "LOCKED":
+                lock_ticks += 1
+                if lock_ticks >= 5:
+                    should_retune = True
+                    lock_ticks = 0
+            else:
+                lock_ticks = 0
+            self.lockedTicks = lock_ticks
+            if should_retune:
                 self.tune(self.tpslist[self.tpslist_idx])
             self.forceRetuneOnNextTick = False
-            self.forceTuneTimer.start(1000, True)
+            self.forceTuneTimer.start(100, True)
 
     def retune(self, configElement=None):
         if configElement is None:
             self.tpslist = []
         self.tuneTimer.stop()
         self.forceTuneTimer.stop()
+        self.lockedTicks = 0
         if self.scan_nims == []:
             return
         if self.scan_nims.value == "":
@@ -628,7 +640,7 @@ class SignalFinderMultistreamT2MI(ConfigListScreen, Screen):
                 self.tuneTimer.start(200, True)
             elif self.scan_type.value.endswith("_transponder"):
                 self.forceRetuneOnNextTick = True
-                self.forceTuneTimer.start(1000, True)
+                self.forceTuneTimer.start(100, True)
         self["status"].setText(status_text)
 
     def OrbToStr(self, orbpos=-1):
@@ -685,6 +697,7 @@ class SignalFinderMultistreamT2MI(ConfigListScreen, Screen):
         indent = "--"
         self.tuneTimer.stop()
         self.forceTuneTimer.stop()
+        self.lockedTicks = 0
         self.list = []
         self.multiscanlist = []
         if self.scan_nims == [] or self.scan_nims.value == "":
@@ -1255,6 +1268,7 @@ class SignalFinderMultistreamT2MI(ConfigListScreen, Screen):
             return
         self.tuneTimer.stop()
         self.forceTuneTimer.stop()
+        self.lockedTicks = 0
         self.deInitFrontend()
         index_to_scan = int(self.scan_nims.value)
         self.feid = index_to_scan
@@ -1407,6 +1421,7 @@ class SignalFinderMultistreamT2MI(ConfigListScreen, Screen):
             x[1].cancel()
         self.tuneTimer.stop()
         self.forceTuneTimer.stop()
+        self.lockedTicks = 0
         self.deInitFrontend()
         if answer:
             self.session.nav.playService(self.session.postScanService)
@@ -1792,16 +1807,28 @@ class SignalFinderMultistream(ConfigListScreen, Screen):
             status = {}
             self.frontend.getFrontendStatus(status)
             force_retune_once = getattr(self, "forceRetuneOnNextTick", False)
-            if force_retune_once or status.get("tuner_state") != "LOCKED":
+            tuner_state = status.get("tuner_state")
+            lock_ticks = getattr(self, "lockedTicks", 0)
+            should_retune = force_retune_once or tuner_state != "LOCKED"
+            if tuner_state == "LOCKED":
+                lock_ticks += 1
+                if lock_ticks >= 5:
+                    should_retune = True
+                    lock_ticks = 0
+            else:
+                lock_ticks = 0
+            self.lockedTicks = lock_ticks
+            if should_retune:
                 self.tune(self.tpslist[self.tpslist_idx])
             self.forceRetuneOnNextTick = False
-            self.forceTuneTimer.start(1000, True)
+            self.forceTuneTimer.start(100, True)
 
     def retune(self, configElement=None):
         if configElement is None:
             self.tpslist = []
         self.tuneTimer.stop()
         self.forceTuneTimer.stop()
+        self.lockedTicks = 0
         if self.scan_nims == []:
             return
         if self.scan_nims.value == "":
@@ -1964,7 +1991,7 @@ class SignalFinderMultistream(ConfigListScreen, Screen):
                 self.tuneTimer.start(200, True)
             elif self.scan_type.value.endswith("_transponder"):
                 self.forceRetuneOnNextTick = True
-                self.forceTuneTimer.start(1000, True)
+                self.forceTuneTimer.start(100, True)
         self["status"].setText(status_text)
 
     def OrbToStr(self, orbpos=-1):
@@ -2015,6 +2042,7 @@ class SignalFinderMultistream(ConfigListScreen, Screen):
     def createSetup(self, firstStart=None):
         self.tuneTimer.stop()
         self.forceTuneTimer.stop()
+        self.lockedTicks = 0
         self.list = []
         self.multiscanlist = []
         if self.scan_nims == [] or self.scan_nims.value == "":
@@ -2511,6 +2539,7 @@ class SignalFinderMultistream(ConfigListScreen, Screen):
             return
         self.tuneTimer.stop()
         self.forceTuneTimer.stop()
+        self.lockedTicks = 0
         self.deInitFrontend()
         index_to_scan = int(self.scan_nims.value)
         self.feid = index_to_scan
@@ -2661,6 +2690,7 @@ class SignalFinderMultistream(ConfigListScreen, Screen):
             x[1].cancel()
         self.tuneTimer.stop()
         self.forceTuneTimer.stop()
+        self.lockedTicks = 0
         self.deInitFrontend()
         if answer:
             self.session.nav.playService(self.session.postScanService)
@@ -3091,16 +3121,28 @@ class SignalFinder(ConfigListScreen, Screen):
             status = {}
             self.frontend.getFrontendStatus(status)
             force_retune_once = getattr(self, "forceRetuneOnNextTick", False)
-            if force_retune_once or status.get("tuner_state") != "LOCKED":
+            tuner_state = status.get("tuner_state")
+            lock_ticks = getattr(self, "lockedTicks", 0)
+            should_retune = force_retune_once or tuner_state != "LOCKED"
+            if tuner_state == "LOCKED":
+                lock_ticks += 1
+                if lock_ticks >= 5:
+                    should_retune = True
+                    lock_ticks = 0
+            else:
+                lock_ticks = 0
+            self.lockedTicks = lock_ticks
+            if should_retune:
                 self.tune(self.tpslist[self.tpslist_idx])
             self.forceRetuneOnNextTick = False
-            self.forceTuneTimer.start(1000, True)
+            self.forceTuneTimer.start(100, True)
 
     def retune(self, configElement=None):
         if configElement is None:
             self.tpslist = []
         self.tuneTimer.stop()
         self.forceTuneTimer.stop()
+        self.lockedTicks = 0
         if self.scan_nims == []:
             return
         if self.scan_nims.value == "":
@@ -3260,7 +3302,7 @@ class SignalFinder(ConfigListScreen, Screen):
                 self.tuneTimer.start(200, True)
             elif self.scan_type.value.endswith("_transponder"):
                 self.forceRetuneOnNextTick = True
-                self.forceTuneTimer.start(1000, True)
+                self.forceTuneTimer.start(100, True)
         self["status"].setText(status_text)
 
     def OrbToStr(self, orbpos=-1):
@@ -3311,6 +3353,7 @@ class SignalFinder(ConfigListScreen, Screen):
     def createSetup(self, firstStart=None):
         self.tuneTimer.stop()
         self.forceTuneTimer.stop()
+        self.lockedTicks = 0
         self.list = []
         self.multiscanlist = []
         if self.scan_nims == [] or self.scan_nims.value == "":
@@ -3774,6 +3817,7 @@ class SignalFinder(ConfigListScreen, Screen):
             return
         self.tuneTimer.stop()
         self.forceTuneTimer.stop()
+        self.lockedTicks = 0
         self.deInitFrontend()
         index_to_scan = int(self.scan_nims.value)
         self.feid = index_to_scan
@@ -3921,6 +3965,7 @@ class SignalFinder(ConfigListScreen, Screen):
             x[1].cancel()
         self.tuneTimer.stop()
         self.forceTuneTimer.stop()
+        self.lockedTicks = 0
         self.deInitFrontend()
         if answer:
             self.session.nav.playService(self.session.postScanService)
