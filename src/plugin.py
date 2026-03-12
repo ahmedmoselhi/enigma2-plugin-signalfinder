@@ -451,7 +451,21 @@ class SignalFinderMultistreamT2MI(ConfigListScreen, Screen):
         if not self.frontend or not self.scan_type.value.endswith("_transponder"):
             return
         if len(self.tpslist) and self.tpslist_idx < len(self.tpslist):
-            # Keep retuning aggressively because some frontends can report stale lock status.
+            status = {}
+            try:
+                self.frontend.getFrontendStatus(status)
+            except Exception:
+                pass
+            if status.get("tuner_state") == "LOCKED":
+                self.forceFrontendReopenTicks = getattr(self, "forceFrontendReopenTicks", 0) + 1
+            else:
+                self.forceFrontendReopenTicks = 0
+            if self.forceFrontendReopenTicks >= 10:
+                # Some drivers keep stale lock state; reopen FE periodically to force a real retune.
+                self.forceFrontendReopenTicks = 0
+                self.deInitFrontend()
+                if self.openFrontend():
+                    self.tuner = Tuner(self.frontend)
             self.tune(self.tpslist[self.tpslist_idx])
             self.forceRetuneOnNextTick = False
             self.forceTuneTimer.start(100, True)
@@ -461,7 +475,7 @@ class SignalFinderMultistreamT2MI(ConfigListScreen, Screen):
             self.tpslist = []
         self.tuneTimer.stop()
         self.forceTuneTimer.stop()
-        self.lockedTicks = 0
+        self.forceFrontendReopenTicks = 0
         if self.scan_nims == []:
             return
         if self.scan_nims.value == "":
@@ -683,7 +697,7 @@ class SignalFinderMultistreamT2MI(ConfigListScreen, Screen):
         indent = "--"
         self.tuneTimer.stop()
         self.forceTuneTimer.stop()
-        self.lockedTicks = 0
+        self.forceFrontendReopenTicks = 0
         self.list = []
         self.multiscanlist = []
         if self.scan_nims == [] or self.scan_nims.value == "":
@@ -1254,7 +1268,7 @@ class SignalFinderMultistreamT2MI(ConfigListScreen, Screen):
             return
         self.tuneTimer.stop()
         self.forceTuneTimer.stop()
-        self.lockedTicks = 0
+        self.forceFrontendReopenTicks = 0
         self.deInitFrontend()
         index_to_scan = int(self.scan_nims.value)
         self.feid = index_to_scan
@@ -1407,7 +1421,7 @@ class SignalFinderMultistreamT2MI(ConfigListScreen, Screen):
             x[1].cancel()
         self.tuneTimer.stop()
         self.forceTuneTimer.stop()
-        self.lockedTicks = 0
+        self.forceFrontendReopenTicks = 0
         self.deInitFrontend()
         if answer:
             self.session.nav.playService(self.session.postScanService)
@@ -1790,7 +1804,21 @@ class SignalFinderMultistream(ConfigListScreen, Screen):
         if not self.frontend or not self.scan_type.value.endswith("_transponder"):
             return
         if len(self.tpslist) and self.tpslist_idx < len(self.tpslist):
-            # Keep retuning aggressively because some frontends can report stale lock status.
+            status = {}
+            try:
+                self.frontend.getFrontendStatus(status)
+            except Exception:
+                pass
+            if status.get("tuner_state") == "LOCKED":
+                self.forceFrontendReopenTicks = getattr(self, "forceFrontendReopenTicks", 0) + 1
+            else:
+                self.forceFrontendReopenTicks = 0
+            if self.forceFrontendReopenTicks >= 10:
+                # Some drivers keep stale lock state; reopen FE periodically to force a real retune.
+                self.forceFrontendReopenTicks = 0
+                self.deInitFrontend()
+                if self.openFrontend():
+                    self.tuner = Tuner(self.frontend)
             self.tune(self.tpslist[self.tpslist_idx])
             self.forceRetuneOnNextTick = False
             self.forceTuneTimer.start(100, True)
@@ -1800,7 +1828,7 @@ class SignalFinderMultistream(ConfigListScreen, Screen):
             self.tpslist = []
         self.tuneTimer.stop()
         self.forceTuneTimer.stop()
-        self.lockedTicks = 0
+        self.forceFrontendReopenTicks = 0
         if self.scan_nims == []:
             return
         if self.scan_nims.value == "":
@@ -2014,7 +2042,7 @@ class SignalFinderMultistream(ConfigListScreen, Screen):
     def createSetup(self, firstStart=None):
         self.tuneTimer.stop()
         self.forceTuneTimer.stop()
-        self.lockedTicks = 0
+        self.forceFrontendReopenTicks = 0
         self.list = []
         self.multiscanlist = []
         if self.scan_nims == [] or self.scan_nims.value == "":
@@ -2511,7 +2539,7 @@ class SignalFinderMultistream(ConfigListScreen, Screen):
             return
         self.tuneTimer.stop()
         self.forceTuneTimer.stop()
-        self.lockedTicks = 0
+        self.forceFrontendReopenTicks = 0
         self.deInitFrontend()
         index_to_scan = int(self.scan_nims.value)
         self.feid = index_to_scan
@@ -2662,7 +2690,7 @@ class SignalFinderMultistream(ConfigListScreen, Screen):
             x[1].cancel()
         self.tuneTimer.stop()
         self.forceTuneTimer.stop()
-        self.lockedTicks = 0
+        self.forceFrontendReopenTicks = 0
         self.deInitFrontend()
         if answer:
             self.session.nav.playService(self.session.postScanService)
@@ -3090,7 +3118,21 @@ class SignalFinder(ConfigListScreen, Screen):
         if not self.frontend or not self.scan_type.value.endswith("_transponder"):
             return
         if len(self.tpslist) and self.tpslist_idx < len(self.tpslist):
-            # Keep retuning aggressively because some frontends can report stale lock status.
+            status = {}
+            try:
+                self.frontend.getFrontendStatus(status)
+            except Exception:
+                pass
+            if status.get("tuner_state") == "LOCKED":
+                self.forceFrontendReopenTicks = getattr(self, "forceFrontendReopenTicks", 0) + 1
+            else:
+                self.forceFrontendReopenTicks = 0
+            if self.forceFrontendReopenTicks >= 10:
+                # Some drivers keep stale lock state; reopen FE periodically to force a real retune.
+                self.forceFrontendReopenTicks = 0
+                self.deInitFrontend()
+                if self.openFrontend():
+                    self.tuner = Tuner(self.frontend)
             self.tune(self.tpslist[self.tpslist_idx])
             self.forceRetuneOnNextTick = False
             self.forceTuneTimer.start(100, True)
@@ -3100,7 +3142,7 @@ class SignalFinder(ConfigListScreen, Screen):
             self.tpslist = []
         self.tuneTimer.stop()
         self.forceTuneTimer.stop()
-        self.lockedTicks = 0
+        self.forceFrontendReopenTicks = 0
         if self.scan_nims == []:
             return
         if self.scan_nims.value == "":
@@ -3311,7 +3353,7 @@ class SignalFinder(ConfigListScreen, Screen):
     def createSetup(self, firstStart=None):
         self.tuneTimer.stop()
         self.forceTuneTimer.stop()
-        self.lockedTicks = 0
+        self.forceFrontendReopenTicks = 0
         self.list = []
         self.multiscanlist = []
         if self.scan_nims == [] or self.scan_nims.value == "":
@@ -3775,7 +3817,7 @@ class SignalFinder(ConfigListScreen, Screen):
             return
         self.tuneTimer.stop()
         self.forceTuneTimer.stop()
-        self.lockedTicks = 0
+        self.forceFrontendReopenTicks = 0
         self.deInitFrontend()
         index_to_scan = int(self.scan_nims.value)
         self.feid = index_to_scan
@@ -3923,7 +3965,7 @@ class SignalFinder(ConfigListScreen, Screen):
             x[1].cancel()
         self.tuneTimer.stop()
         self.forceTuneTimer.stop()
-        self.lockedTicks = 0
+        self.forceFrontendReopenTicks = 0
         self.deInitFrontend()
         if answer:
             self.session.nav.playService(self.session.postScanService)
