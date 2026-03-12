@@ -451,6 +451,14 @@ class SignalFinderMultistreamT2MI(ConfigListScreen, Screen):
         if not self.frontend or not self.scan_type.value.endswith("_transponder"):
             return
         if len(self.tpslist) and self.tpslist_idx < len(self.tpslist):
+            pending_back = getattr(self, "pendingRetuneBack", None)
+            if pending_back is not None:
+                # Complete delayed kick-and-return sequence.
+                self.tune(pending_back)
+                self.pendingRetuneBack = None
+                self.forceRetuneOnNextTick = False
+                self.forceTuneTimer.start(100, True)
+                return
             status = {}
             try:
                 self.frontend.getFrontendStatus(status)
@@ -480,7 +488,7 @@ class SignalFinderMultistreamT2MI(ConfigListScreen, Screen):
                         nudged[2] = 5 - pol
                 self.retuneKickPhase = (kick_phase + 1) % 3
                 self.tune(tuple(nudged))
-                self.tune(transponder)
+                self.pendingRetuneBack = transponder
             self.forceRetuneOnNextTick = False
             self.forceTuneTimer.start(100, True)
 
@@ -491,6 +499,7 @@ class SignalFinderMultistreamT2MI(ConfigListScreen, Screen):
         self.forceTuneTimer.stop()
         self.forceRetuneTicks = 0
         self.retuneKickPhase = 0
+        self.pendingRetuneBack = None
         if self.scan_nims == []:
             return
         if self.scan_nims.value == "":
@@ -714,6 +723,7 @@ class SignalFinderMultistreamT2MI(ConfigListScreen, Screen):
         self.forceTuneTimer.stop()
         self.forceRetuneTicks = 0
         self.retuneKickPhase = 0
+        self.pendingRetuneBack = None
         self.list = []
         self.multiscanlist = []
         if self.scan_nims == [] or self.scan_nims.value == "":
@@ -1286,6 +1296,7 @@ class SignalFinderMultistreamT2MI(ConfigListScreen, Screen):
         self.forceTuneTimer.stop()
         self.forceRetuneTicks = 0
         self.retuneKickPhase = 0
+        self.pendingRetuneBack = None
         self.deInitFrontend()
         index_to_scan = int(self.scan_nims.value)
         self.feid = index_to_scan
@@ -1440,6 +1451,7 @@ class SignalFinderMultistreamT2MI(ConfigListScreen, Screen):
         self.forceTuneTimer.stop()
         self.forceRetuneTicks = 0
         self.retuneKickPhase = 0
+        self.pendingRetuneBack = None
         self.deInitFrontend()
         if answer:
             self.session.nav.playService(self.session.postScanService)
@@ -1822,6 +1834,14 @@ class SignalFinderMultistream(ConfigListScreen, Screen):
         if not self.frontend or not self.scan_type.value.endswith("_transponder"):
             return
         if len(self.tpslist) and self.tpslist_idx < len(self.tpslist):
+            pending_back = getattr(self, "pendingRetuneBack", None)
+            if pending_back is not None:
+                # Complete delayed kick-and-return sequence.
+                self.tune(pending_back)
+                self.pendingRetuneBack = None
+                self.forceRetuneOnNextTick = False
+                self.forceTuneTimer.start(100, True)
+                return
             status = {}
             try:
                 self.frontend.getFrontendStatus(status)
@@ -1851,7 +1871,7 @@ class SignalFinderMultistream(ConfigListScreen, Screen):
                         nudged[2] = 5 - pol
                 self.retuneKickPhase = (kick_phase + 1) % 3
                 self.tune(tuple(nudged))
-                self.tune(transponder)
+                self.pendingRetuneBack = transponder
             self.forceRetuneOnNextTick = False
             self.forceTuneTimer.start(100, True)
 
@@ -1862,6 +1882,7 @@ class SignalFinderMultistream(ConfigListScreen, Screen):
         self.forceTuneTimer.stop()
         self.forceRetuneTicks = 0
         self.retuneKickPhase = 0
+        self.pendingRetuneBack = None
         if self.scan_nims == []:
             return
         if self.scan_nims.value == "":
@@ -2077,6 +2098,7 @@ class SignalFinderMultistream(ConfigListScreen, Screen):
         self.forceTuneTimer.stop()
         self.forceRetuneTicks = 0
         self.retuneKickPhase = 0
+        self.pendingRetuneBack = None
         self.list = []
         self.multiscanlist = []
         if self.scan_nims == [] or self.scan_nims.value == "":
@@ -2575,6 +2597,7 @@ class SignalFinderMultistream(ConfigListScreen, Screen):
         self.forceTuneTimer.stop()
         self.forceRetuneTicks = 0
         self.retuneKickPhase = 0
+        self.pendingRetuneBack = None
         self.deInitFrontend()
         index_to_scan = int(self.scan_nims.value)
         self.feid = index_to_scan
@@ -2727,6 +2750,7 @@ class SignalFinderMultistream(ConfigListScreen, Screen):
         self.forceTuneTimer.stop()
         self.forceRetuneTicks = 0
         self.retuneKickPhase = 0
+        self.pendingRetuneBack = None
         self.deInitFrontend()
         if answer:
             self.session.nav.playService(self.session.postScanService)
@@ -3154,6 +3178,14 @@ class SignalFinder(ConfigListScreen, Screen):
         if not self.frontend or not self.scan_type.value.endswith("_transponder"):
             return
         if len(self.tpslist) and self.tpslist_idx < len(self.tpslist):
+            pending_back = getattr(self, "pendingRetuneBack", None)
+            if pending_back is not None:
+                # Complete delayed kick-and-return sequence.
+                self.tune(pending_back)
+                self.pendingRetuneBack = None
+                self.forceRetuneOnNextTick = False
+                self.forceTuneTimer.start(100, True)
+                return
             status = {}
             try:
                 self.frontend.getFrontendStatus(status)
@@ -3183,7 +3215,7 @@ class SignalFinder(ConfigListScreen, Screen):
                         nudged[2] = 5 - pol
                 self.retuneKickPhase = (kick_phase + 1) % 3
                 self.tune(tuple(nudged))
-                self.tune(transponder)
+                self.pendingRetuneBack = transponder
             self.forceRetuneOnNextTick = False
             self.forceTuneTimer.start(100, True)
 
@@ -3194,6 +3226,7 @@ class SignalFinder(ConfigListScreen, Screen):
         self.forceTuneTimer.stop()
         self.forceRetuneTicks = 0
         self.retuneKickPhase = 0
+        self.pendingRetuneBack = None
         if self.scan_nims == []:
             return
         if self.scan_nims.value == "":
@@ -3406,6 +3439,7 @@ class SignalFinder(ConfigListScreen, Screen):
         self.forceTuneTimer.stop()
         self.forceRetuneTicks = 0
         self.retuneKickPhase = 0
+        self.pendingRetuneBack = None
         self.list = []
         self.multiscanlist = []
         if self.scan_nims == [] or self.scan_nims.value == "":
@@ -3871,6 +3905,7 @@ class SignalFinder(ConfigListScreen, Screen):
         self.forceTuneTimer.stop()
         self.forceRetuneTicks = 0
         self.retuneKickPhase = 0
+        self.pendingRetuneBack = None
         self.deInitFrontend()
         index_to_scan = int(self.scan_nims.value)
         self.feid = index_to_scan
@@ -4020,6 +4055,7 @@ class SignalFinder(ConfigListScreen, Screen):
         self.forceTuneTimer.stop()
         self.forceRetuneTicks = 0
         self.retuneKickPhase = 0
+        self.pendingRetuneBack = None
         self.deInitFrontend()
         if answer:
             self.session.nav.playService(self.session.postScanService)
