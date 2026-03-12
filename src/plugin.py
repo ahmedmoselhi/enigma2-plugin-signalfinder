@@ -461,6 +461,7 @@ class SignalFinderMultistreamT2MI(ConfigListScreen, Screen):
             self.tpslist = []
         self.tuneTimer.stop()
         self.forceTuneTimer.stop()
+        self.lockedTicks = 0
         if self.scan_nims == []:
             return
         if self.scan_nims.value == "":
@@ -682,6 +683,7 @@ class SignalFinderMultistreamT2MI(ConfigListScreen, Screen):
         indent = "--"
         self.tuneTimer.stop()
         self.forceTuneTimer.stop()
+        self.lockedTicks = 0
         self.list = []
         self.multiscanlist = []
         if self.scan_nims == [] or self.scan_nims.value == "":
@@ -1252,6 +1254,7 @@ class SignalFinderMultistreamT2MI(ConfigListScreen, Screen):
             return
         self.tuneTimer.stop()
         self.forceTuneTimer.stop()
+        self.lockedTicks = 0
         self.deInitFrontend()
         index_to_scan = int(self.scan_nims.value)
         self.feid = index_to_scan
@@ -1404,6 +1407,7 @@ class SignalFinderMultistreamT2MI(ConfigListScreen, Screen):
             x[1].cancel()
         self.tuneTimer.stop()
         self.forceTuneTimer.stop()
+        self.lockedTicks = 0
         self.deInitFrontend()
         if answer:
             self.session.nav.playService(self.session.postScanService)
@@ -1796,6 +1800,7 @@ class SignalFinderMultistream(ConfigListScreen, Screen):
             self.tpslist = []
         self.tuneTimer.stop()
         self.forceTuneTimer.stop()
+        self.lockedTicks = 0
         if self.scan_nims == []:
             return
         if self.scan_nims.value == "":
@@ -2009,6 +2014,7 @@ class SignalFinderMultistream(ConfigListScreen, Screen):
     def createSetup(self, firstStart=None):
         self.tuneTimer.stop()
         self.forceTuneTimer.stop()
+        self.lockedTicks = 0
         self.list = []
         self.multiscanlist = []
         if self.scan_nims == [] or self.scan_nims.value == "":
@@ -2505,6 +2511,7 @@ class SignalFinderMultistream(ConfigListScreen, Screen):
             return
         self.tuneTimer.stop()
         self.forceTuneTimer.stop()
+        self.lockedTicks = 0
         self.deInitFrontend()
         index_to_scan = int(self.scan_nims.value)
         self.feid = index_to_scan
@@ -2655,6 +2662,7 @@ class SignalFinderMultistream(ConfigListScreen, Screen):
             x[1].cancel()
         self.tuneTimer.stop()
         self.forceTuneTimer.stop()
+        self.lockedTicks = 0
         self.deInitFrontend()
         if answer:
             self.session.nav.playService(self.session.postScanService)
@@ -3092,6 +3100,7 @@ class SignalFinder(ConfigListScreen, Screen):
             self.tpslist = []
         self.tuneTimer.stop()
         self.forceTuneTimer.stop()
+        self.lockedTicks = 0
         if self.scan_nims == []:
             return
         if self.scan_nims.value == "":
@@ -3302,6 +3311,7 @@ class SignalFinder(ConfigListScreen, Screen):
     def createSetup(self, firstStart=None):
         self.tuneTimer.stop()
         self.forceTuneTimer.stop()
+        self.lockedTicks = 0
         self.list = []
         self.multiscanlist = []
         if self.scan_nims == [] or self.scan_nims.value == "":
@@ -3765,6 +3775,7 @@ class SignalFinder(ConfigListScreen, Screen):
             return
         self.tuneTimer.stop()
         self.forceTuneTimer.stop()
+        self.lockedTicks = 0
         self.deInitFrontend()
         index_to_scan = int(self.scan_nims.value)
         self.feid = index_to_scan
@@ -3912,6 +3923,7 @@ class SignalFinder(ConfigListScreen, Screen):
             x[1].cancel()
         self.tuneTimer.stop()
         self.forceTuneTimer.stop()
+        self.lockedTicks = 0
         self.deInitFrontend()
         if answer:
             self.session.nav.playService(self.session.postScanService)
