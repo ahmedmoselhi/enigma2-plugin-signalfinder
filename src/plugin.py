@@ -1556,6 +1556,9 @@ class SignalFinderMultistreamT2MI(ConfigListScreen, Screen):
 			self.restartPrevService(True)
 
 	def restartPrevService(self, answer):
+		if self.scan_clearallservices.value == "yes_hold_feeds":
+			appendSnapshotServicesToLamedb(getattr(self, "kept_feed_snapshot", None))
+			self.kept_feed_snapshot = None
 		for x in self["config"].list:
 			x[1].cancel()
 		self.tuneTimer.stop()
@@ -2732,6 +2735,9 @@ class SignalFinderMultistream(ConfigListScreen, Screen):
 			self.restartPrevService(True)
 
 	def restartPrevService(self, answer):
+		if self.scan_clearallservices.value == "yes_hold_feeds":
+			appendSnapshotServicesToLamedb(getattr(self, "kept_feed_snapshot", None))
+			self.kept_feed_snapshot = None
 		for x in self["config"].list:
 			x[1].cancel()
 		self.tuneTimer.stop()
@@ -3921,6 +3927,9 @@ class SignalFinder(ConfigListScreen, Screen):
 			self.restartPrevService(True)
 
 	def restartPrevService(self, answer):
+		if self.scan_clearallservices.value == "yes_hold_feeds":
+			appendSnapshotServicesToLamedb(getattr(self, "kept_feed_snapshot", None))
+			self.kept_feed_snapshot = None
 		for x in self["config"].list:
 			x[1].cancel()
 		self.tuneTimer.stop()
