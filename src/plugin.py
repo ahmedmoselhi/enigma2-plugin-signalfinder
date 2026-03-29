@@ -21,7 +21,7 @@ import re
 
 config.misc.direct_tuner = ConfigYesNo(False)
 
-plugin_version = "3.1"
+plugin_version = "3.2"
 
 def getDesktopSize():
 	s = getDesktop(0).size()
@@ -1582,6 +1582,8 @@ class SignalFinderMultistreamT2MI(ConfigListScreen, Screen):
 		if answer is not True:
 			self.session.openWithCallback(self.restartSignalFinder, MessageBox, _("Do you want to scan another transponder/satellite?"), MessageBox.TYPE_YESNO, timeout=10)
 		elif answer is True:
+			if self.scan_clearallservices.value == "yes_hold_feeds":
+				appendSnapshotServicesToLamedb(getattr(self, "kept_feed_snapshot", None))
 			self.restartPrevService(True)
 
 	def restartSignalFinder(self, answer):
@@ -2759,6 +2761,8 @@ class SignalFinderMultistream(ConfigListScreen, Screen):
 		if answer is not True:
 			self.session.openWithCallback(self.restartSignalFinder, MessageBox, _("Do you want to scan another transponder/satellite?"), MessageBox.TYPE_YESNO, timeout=10)
 		elif answer is True:
+			if self.scan_clearallservices.value == "yes_hold_feeds":
+				appendSnapshotServicesToLamedb(getattr(self, "kept_feed_snapshot", None))
 			self.restartPrevService(True)
 
 	def restartSignalFinder(self, answer):
@@ -3949,6 +3953,8 @@ class SignalFinder(ConfigListScreen, Screen):
 		if answer is not True:
 			self.session.openWithCallback(self.restartSignalFinder, MessageBox, _("Do you want to scan another transponder/satellite?"), MessageBox.TYPE_YESNO, timeout=10)
 		elif answer is True:
+			if self.scan_clearallservices.value == "yes_hold_feeds":
+				appendSnapshotServicesToLamedb(getattr(self, "kept_feed_snapshot", None))
 			self.restartPrevService(True)
 
 	def restartSignalFinder(self, answer):
