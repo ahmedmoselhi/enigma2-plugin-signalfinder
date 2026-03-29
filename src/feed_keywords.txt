@@ -10,3 +10,7 @@
 # ^UHD
 # SPORT
 # DSNG
+Feed
+FEED
+DSNG
+enc
