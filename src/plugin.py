@@ -22,7 +22,7 @@ import re
 
 config.misc.direct_tuner = ConfigYesNo(False)
 
-plugin_version = "3.1"
+plugin_version = "3.2"
 
 def getDesktopSize():
 	s = getDesktop(0).size()
