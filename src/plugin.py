@@ -10,13 +10,14 @@ from Components.NimManager import nimmanager, getConfigSatlist
 from Components.Label import Label
 from Screens.Console import Console
 from Screens.MessageBox import MessageBox
-from enigma import eTimer, eDVBFrontendParametersSatellite, eDVBFrontendParametersTerrestrial, eComponentScan, eDVBResourceManager, getDesktop
+from enigma import eTimer, eDVBFrontendParametersSatellite, eDVBFrontendParametersTerrestrial, eComponentScan, eDVBResourceManager, eDVBDB, getDesktop
 from Components.Sources.FrontendStatus import FrontendStatus
 from Components.TuneTest import Tuner
 from Components.MenuList import MenuList
 from Screens.ChoiceBox import ChoiceBox
 from Screens.ServiceScan import ServiceScan
 import os
+import re
 
 config.misc.direct_tuner = ConfigYesNo(False)
 
@@ -34,6 +35,208 @@ multistream = hasattr(eDVBFrontendParametersSatellite, "PLS_Root")
 t2mi = hasattr(eDVBFrontendParametersSatellite, "No_T2MI_PLP_Id") and hasattr(eDVBFrontendParametersSatellite, "T2MI_Default_Pid")
 
 loadScript = "/usr/lib/enigma2/python/Plugins/SystemPlugins/Signalfinder/update-plugin.sh"
+PLUGIN_DIR = os.path.dirname(os.path.realpath(__file__))
+FEED_KEYWORDS_FILES_GLOB = ".txt"
+DEFAULT_KEEP_FEED_KEYWORDS = ["feed", "sng", "enc"]
+
+
+def loadFeedKeepKeywordRegex():
+	patterns = []
+	custom_keywords_loaded = False
+	try:
+		file_list = sorted([x for x in os.listdir(PLUGIN_DIR) if x.lower().endswith(FEED_KEYWORDS_FILES_GLOB)])
+	except Exception as err:
+		print("[Signalfinder] Failed to read feed keywords list: %s" % err)
+		file_list = []
+	for file_name in file_list:
+		file_path = os.path.join(PLUGIN_DIR, file_name)
+		try:
+			fd = open(file_path, "r")
+			try:
+				for line in fd:
+					keyword = line.strip()
+					if not keyword or keyword.startswith("#"):
+						continue
+					try:
+						patterns.append(re.compile(keyword, re.IGNORECASE))
+						custom_keywords_loaded = True
+					except re.error as regex_err:
+						print("[Signalfinder] Invalid feed keyword regex '%s' in %s: %s" % (keyword, file_name, regex_err))
+			finally:
+				fd.close()
+		except Exception as err:
+			print("[Signalfinder] Failed to read feed keyword file %s: %s" % (file_name, err))
+	if not custom_keywords_loaded:
+		for keyword in DEFAULT_KEEP_FEED_KEYWORDS:
+			patterns.append(re.compile(keyword, re.IGNORECASE))
+	return patterns
+
+
+def parseLamedb(lines):
+	transponders_idx = -1
+	transponders_end_idx = -1
+	services_idx = -1
+	services_end_idx = -1
+	for i, line in enumerate(lines):
+		token = line.strip()
+		if transponders_idx == -1 and token == "transponders":
+			transponders_idx = i
+			continue
+		if transponders_idx != -1 and transponders_end_idx == -1 and token == "end":
+			transponders_end_idx = i
+			continue
+		if services_idx == -1 and token == "services":
+			services_idx = i
+			continue
+		if services_idx != -1 and token == "end":
+			services_end_idx = i
+			break
+	return transponders_idx, transponders_end_idx, services_idx, services_end_idx
+
+
+def collectKeepServicesSnapshot():
+	patterns = loadFeedKeepKeywordRegex()
+	if not patterns:
+		return {"transponders": {}, "services": []}
+	lamedb_path = "/etc/enigma2/lamedb"
+	if not os.path.exists(lamedb_path):
+		return {"transponders": {}, "services": []}
+	try:
+		fd = open(lamedb_path, "r")
+		try:
+			lines = fd.readlines()
+		finally:
+			fd.close()
+	except Exception as err:
+		print("[Signalfinder] Failed to read lamedb: %s" % err)
+		return {"transponders": {}, "services": []}
+
+	transponders_idx, transponders_end_idx, services_idx, services_end_idx = parseLamedb(lines)
+	if min(transponders_idx, transponders_end_idx, services_idx, services_end_idx) < 0:
+		return {"transponders": {}, "services": []}
+
+	transponders_data = lines[transponders_idx + 1:transponders_end_idx]
+	transponders = {}
+	tp_idx = 0
+	while tp_idx < len(transponders_data):
+		key_line = transponders_data[tp_idx]
+		key = key_line.strip()
+		block = [key_line]
+		tp_idx += 1
+		while tp_idx < len(transponders_data):
+			block.append(transponders_data[tp_idx])
+			if transponders_data[tp_idx].strip() == "/":
+				tp_idx += 1
+				break
+			tp_idx += 1
+		if key:
+			transponders[key] = block
+
+	services_data = lines[services_idx + 1:services_end_idx]
+	kept_services = []
+	kept_tp_keys = {}
+	idx = 0
+	while idx + 2 < len(services_data):
+		ref_line = services_data[idx]
+		name_line = services_data[idx + 1]
+		provider_line = services_data[idx + 2]
+		service_name = name_line.strip()
+		keep = False
+		for pattern in patterns:
+			if pattern.search(service_name):
+				keep = True
+				break
+		if keep:
+			kept_services.append([ref_line, name_line, provider_line])
+			ref_tokens = ref_line.strip().split(":")
+			if len(ref_tokens) >= 4:
+				tp_key = "%s:%s:%s" % (ref_tokens[1], ref_tokens[2], ref_tokens[3])
+				kept_tp_keys[tp_key] = True
+		idx += 3
+
+	kept_transponders = {}
+	for tp_key in kept_tp_keys.keys():
+		if tp_key in transponders:
+			kept_transponders[tp_key] = transponders[tp_key]
+	return {"transponders": kept_transponders, "services": kept_services}
+
+
+def appendSnapshotServicesToLamedb(snapshot):
+	if not snapshot or (not snapshot.get("services")):
+		return
+	lamedb_path = "/etc/enigma2/lamedb"
+	if not os.path.exists(lamedb_path):
+		return
+	try:
+		fd = open(lamedb_path, "r")
+		try:
+			lines = fd.readlines()
+		finally:
+			fd.close()
+	except Exception as err:
+		print("[Signalfinder] Failed to read lamedb for restore: %s" % err)
+		return
+
+	transponders_idx, transponders_end_idx, services_idx, services_end_idx = parseLamedb(lines)
+	if min(transponders_idx, transponders_end_idx, services_idx, services_end_idx) < 0:
+		return
+
+	transponders_data = lines[transponders_idx + 1:transponders_end_idx]
+	existing_tp_keys = {}
+	for line in transponders_data:
+		key = line.strip()
+		if ":" in key and " " not in key:
+			existing_tp_keys[key] = True
+
+	services_data = lines[services_idx + 1:services_end_idx]
+	existing_service_refs = {}
+	idx = 0
+	while idx + 2 < len(services_data):
+		existing_service_refs[services_data[idx].strip()] = True
+		idx += 3
+
+	new_tp_blocks = []
+	for tp_key, tp_block in snapshot.get("transponders", {}).items():
+		if tp_key not in existing_tp_keys:
+			new_tp_blocks.extend(tp_block)
+
+	new_service_blocks = []
+	for service_block in snapshot.get("services", []):
+		service_ref = service_block[0].strip()
+		if service_ref not in existing_service_refs:
+			new_service_blocks.extend(service_block)
+
+	if not new_tp_blocks and not new_service_blocks:
+		return
+
+	new_lines = []
+	new_lines.extend(lines[:transponders_end_idx])
+	new_lines.extend(new_tp_blocks)
+	new_lines.extend(lines[transponders_end_idx:services_end_idx])
+	new_lines.extend(new_service_blocks)
+	new_lines.extend(lines[services_end_idx:])
+	tmp_path = lamedb_path + ".tmp"
+	try:
+		fd = open(tmp_path, "w")
+		try:
+			fd.writelines(new_lines)
+		finally:
+			fd.close()
+		os.rename(tmp_path, lamedb_path)
+		try:
+			db = eDVBDB.getInstance()
+			db.reloadServicelist()
+			db.reloadBouquets()
+		except Exception as reload_err:
+			print("[Signalfinder] Failed to reload service database after restore: %s" % reload_err)
+		print("[Signalfinder] Restored %d kept services after scan." % (len(new_service_blocks) // 3))
+	except Exception as err:
+		print("[Signalfinder] Failed to update lamedb after feed restore: %s" % err)
+		try:
+			if os.path.exists(tmp_path):
+				os.remove(tmp_path)
+		except Exception:
+			pass
 
 VIASATUKR = [(12288000, 0)] #Amos 4w
 VIASAT = [(11265000, 0), (11265000, 1), (11305000, 0), (11305000, 1), (11345000, 1), (11345000, 0), (11385000, 1), (11727000, 0), (11785000, 1), (11804000, 0), (11823000, 1), (11843000, 0), (11862000, 1), (11881000, 0), (11900000, 1), (11919000, 0), (11938000, 1), (11958000, 0), (11977000, 1), (11996000, 0), (12015000, 1), (12034000, 0), (12054000, 1), (12092000, 1), (12245000, 1), (12380000, 0), (12437000, 1), (12476000, 1), (12608000, 0), (12637000, 0)]
@@ -1276,13 +1479,14 @@ class SignalFinderMultistreamT2MI(ConfigListScreen, Screen):
 
 		flags = self.scan_networkScan.value and eComponentScan.scanNetworkSearch or 0
 		tmp = self.scan_clearallservices.value
+		self.kept_feed_snapshot = None
 		if tmp == "yes":
 			flags |= eComponentScan.scanRemoveServices
 		elif tmp == "yes_hold_feeds":
+			self.kept_feed_snapshot = collectKeepServicesSnapshot()
 			flags |= eComponentScan.scanRemoveServices
-			flags |= eComponentScan.scanDontRemoveFeeds
 
-		if tmp != "no" and not removeAll:
+		if tmp == "yes" and not removeAll:
 			flags |= eComponentScan.scanDontRemoveUnscanned
 
 		if self.scan_onlyfree.value:
@@ -1324,6 +1528,8 @@ class SignalFinderMultistreamT2MI(ConfigListScreen, Screen):
 		if answer is not True:
 			self.session.openWithCallback(self.restartSignalFinder, MessageBox, _("Do you want to scan another transponder/satellite?"), MessageBox.TYPE_YESNO, timeout=10)
 		elif answer is True:
+			if self.scan_clearallservices.value == "yes_hold_feeds":
+				appendSnapshotServicesToLamedb(getattr(self, "kept_feed_snapshot", None))
 			self.restartPrevService(True)
 
 	def restartSignalFinder(self, answer):
@@ -2449,13 +2655,14 @@ class SignalFinderMultistream(ConfigListScreen, Screen):
 
 		flags = self.scan_networkScan.value and eComponentScan.scanNetworkSearch or 0
 		tmp = self.scan_clearallservices.value
+		self.kept_feed_snapshot = None
 		if tmp == "yes":
 			flags |= eComponentScan.scanRemoveServices
 		elif tmp == "yes_hold_feeds":
+			self.kept_feed_snapshot = collectKeepServicesSnapshot()
 			flags |= eComponentScan.scanRemoveServices
-			flags |= eComponentScan.scanDontRemoveFeeds
 
-		if tmp != "no" and not removeAll:
+		if tmp == "yes" and not removeAll:
 			flags |= eComponentScan.scanDontRemoveUnscanned
 
 		if self.scan_onlyfree.value:
@@ -2497,6 +2704,8 @@ class SignalFinderMultistream(ConfigListScreen, Screen):
 		if answer is not True:
 			self.session.openWithCallback(self.restartSignalFinder, MessageBox, _("Do you want to scan another transponder/satellite?"), MessageBox.TYPE_YESNO, timeout=10)
 		elif answer is True:
+			if self.scan_clearallservices.value == "yes_hold_feeds":
+				appendSnapshotServicesToLamedb(getattr(self, "kept_feed_snapshot", None))
 			self.restartPrevService(True)
 
 	def restartSignalFinder(self, answer):
@@ -3635,13 +3844,14 @@ class SignalFinder(ConfigListScreen, Screen):
 
 		flags = self.scan_networkScan.value and eComponentScan.scanNetworkSearch or 0
 		tmp = self.scan_clearallservices.value
+		self.kept_feed_snapshot = None
 		if tmp == "yes":
 			flags |= eComponentScan.scanRemoveServices
 		elif tmp == "yes_hold_feeds":
+			self.kept_feed_snapshot = collectKeepServicesSnapshot()
 			flags |= eComponentScan.scanRemoveServices
-			flags |= eComponentScan.scanDontRemoveFeeds
 
-		if tmp != "no" and not removeAll:
+		if tmp == "yes" and not removeAll:
 			flags |= eComponentScan.scanDontRemoveUnscanned
 
 		if self.scan_onlyfree.value:
@@ -3683,6 +3893,8 @@ class SignalFinder(ConfigListScreen, Screen):
 		if answer is not True:
 			self.session.openWithCallback(self.restartSignalFinder, MessageBox, _("Do you want to scan another transponder/satellite?"), MessageBox.TYPE_YESNO, timeout=10)
 		elif answer is True:
+			if self.scan_clearallservices.value == "yes_hold_feeds":
+				appendSnapshotServicesToLamedb(getattr(self, "kept_feed_snapshot", None))
 			self.restartPrevService(True)
 
 	def restartSignalFinder(self, answer):
